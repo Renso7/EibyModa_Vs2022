@@ -1,0 +1,259 @@
+CREATE DATABASE EIBYMODA;
+
+USE EIBYMODA;
+
+-- Creación de tablas para la empresa EIBY
+
+-- Tablas principales
+
+CREATE TABLE TipoDoc (
+    IdTipoDoc INT PRIMARY KEY,
+    Nombre VARCHAR(255),
+    Flujo VARCHAR(255)
+);
+
+CREATE TABLE Categoria (
+    IdCategoria INT PRIMARY KEY,
+    Descripcion VARCHAR(255),
+    Estado VARCHAR(255),
+    FechaRegistro DATE
+);
+
+CREATE TABLE DetalleVenta (
+    IdDetalleVenta INT PRIMARY KEY,
+    Cantidad INT,
+    Precio DECIMAL(10, 2),
+    Fecha DATE,
+    Descripcion VARCHAR(255)
+);
+
+CREATE TABLE Cliente (
+    IdCliente INT PRIMARY KEY,
+    Nombre VARCHAR(255),
+    Apellido VARCHAR(255),
+    DNI VARCHAR(15),
+    Direccion VARCHAR(255),
+    Telefono VARCHAR(15),
+    Email VARCHAR(255),
+    FechaRegistro DATE
+);
+
+CREATE TABLE Producto (
+    IdProducto INT PRIMARY KEY,
+    IdCategoria INT,
+    IdDetalleVenta INT,
+    Nombre VARCHAR(255),
+    Marca VARCHAR(255),
+    Modelo VARCHAR(255),
+    Color VARCHAR(255),
+    Talla VARCHAR(255),
+    CodBarra VARCHAR(255),
+    Descripcion VARCHAR(255),
+    Precio DECIMAL(10, 2),
+    Stock INT,
+    Imagen VARCHAR(255),
+    Estado VARCHAR(255),
+    FechaRegistro DATE,
+    FOREIGN KEY (IdCategoria) REFERENCES Categoria(IdCategoria),
+    FOREIGN KEY (IdDetalleVenta) REFERENCES DetalleVenta(IdDetalleVenta)
+);
+
+CREATE TABLE Proveedor (
+    IdProveedor INT PRIMARY KEY,
+    Rsocial VARCHAR(255),
+    RUC VARCHAR(15),
+    Telefono VARCHAR(15),
+    Email VARCHAR(255),
+    Direccion VARCHAR(255)
+);
+
+-- Tablas intermedias
+CREATE TABLE DocEntrada (
+    IdDocEntrada INT PRIMARY KEY,
+    IdProveedor INT,
+    IdTipoDocumento INT,
+    NroDocumento VARCHAR(255),
+    Fecha DATE,
+    Descripcion VARCHAR(255),
+    FOREIGN KEY (IdProveedor) REFERENCES Proveedor(IdProveedor),
+    FOREIGN KEY (IdTipoDocumento) REFERENCES TipoDoc(IdTipoDoc)
+);
+
+CREATE TABLE DetalleDocEntrada (
+    IdDetalleDocEntrada INT PRIMARY KEY,
+    IdDocEntrada INT,
+    IdProducto INT,
+    IdMarca INT,
+    IdCategoria INT,
+    IdDetalle INT,
+    IdProveedor INT,
+    Lote VARCHAR(255),
+    Cantidad INT,
+    PCosto DECIMAL(10, 2),
+    PVenta DECIMAL(10, 2),
+    PrecioUnidad DECIMAL(10, 2),
+    StockMinimo INT,
+    FOREIGN KEY (IdDocEntrada) REFERENCES DocEntrada(IdDocEntrada),
+    FOREIGN KEY (IdProducto) REFERENCES Producto(IdProducto),
+    FOREIGN KEY (IdCategoria) REFERENCES Categoria(IdCategoria),
+    FOREIGN KEY (IdProveedor) REFERENCES Proveedor(IdProveedor)
+);
+
+CREATE TABLE Almacen (
+    IdAlmacen INT PRIMARY KEY,
+    IdDocEntrada INT,
+    IdProveedor INT,
+    Producto VARCHAR(255),
+    Modelo VARCHAR(255),
+    Talla VARCHAR(255),
+    Color VARCHAR(255),
+    Stock INT,
+    PrecioCompra DECIMAL(10, 2),
+    FechaCompra DATE,
+    FOREIGN KEY (IdDocEntrada) REFERENCES DocEntrada(IdDocEntrada),
+    FOREIGN KEY (IdProveedor) REFERENCES Proveedor(IdProveedor)
+);
+
+CREATE TABLE DocSalida (
+    IdDocSalida INT PRIMARY KEY,
+    IdAlmacen INT,
+    IdDocEntrada INT,
+    IdProveedor INT,
+    IdTipoDoc INT,
+    NroDoc VARCHAR(255),
+    Fecha DATE,
+    Motivo VARCHAR(255),
+    FOREIGN KEY (IdAlmacen) REFERENCES Almacen(IdAlmacen),
+    FOREIGN KEY (IdDocEntrada) REFERENCES DocEntrada(IdDocEntrada),
+    FOREIGN KEY (IdProveedor) REFERENCES Proveedor(IdProveedor),
+    FOREIGN KEY (IdTipoDoc) REFERENCES TipoDoc(IdTipoDoc)
+);
+
+
+
+-- Tablas finales
+
+CREATE TABLE DetalleDocSalida (
+    IdDetalleDocSalida INT PRIMARY KEY,
+    IdDocSalida INT,
+    IdProducto INT,
+    IdCategoria INT,
+    IdDetalleVenta INT,
+    IdAlmacen INT,
+    IdDocEntrada INT,
+    IdProveedor INT,
+    Lote VARCHAR(255),
+    Cantidad INT,
+    PCosto DECIMAL(10, 2),
+    FOREIGN KEY (IdDocSalida) REFERENCES DocSalida(IdDocSalida),
+    FOREIGN KEY (IdProducto) REFERENCES Producto(IdProducto),
+    FOREIGN KEY (IdCategoria) REFERENCES Categoria(IdCategoria),
+    FOREIGN KEY (IdDetalleVenta) REFERENCES DetalleVenta(IdDetalleVenta),
+    FOREIGN KEY (IdAlmacen) REFERENCES Almacen(IdAlmacen),
+    FOREIGN KEY (IdDocEntrada) REFERENCES DocEntrada(IdDocEntrada),
+    FOREIGN KEY (IdProveedor) REFERENCES Proveedor(IdProveedor)
+);
+
+CREATE TABLE CarritoCompras (
+    IdCarritoCompras INT PRIMARY KEY,
+    IdCliente INT,
+    IdProducto INT,
+    IdCategoria INT,
+    IdDetalleVenta INT,
+    Cantidad INT,
+    FOREIGN KEY (IdCliente) REFERENCES Cliente(IdCliente),
+    FOREIGN KEY (IdProducto) REFERENCES Producto(IdProducto),
+    FOREIGN KEY (IdCategoria) REFERENCES Categoria(IdCategoria),
+    FOREIGN KEY (IdDetalleVenta) REFERENCES DetalleVenta(IdDetalleVenta)
+);
+
+CREATE TABLE Kardex (
+    IdKardex INT PRIMARY KEY,
+    IdProducto INT,
+    IdCategoria INT,
+    IdDetalleVenta INT,
+    CantidadIngreso INT,
+    CantSalida INT,
+    Stock INT,
+    UtilPrecioCosto DECIMAL(10, 2),
+    UtilPrecioVenta DECIMAL(10, 2),
+    UtilPorUnidad DECIMAL(10, 2),
+    FOREIGN KEY (IdProducto) REFERENCES Producto(IdProducto),
+    FOREIGN KEY (IdCategoria) REFERENCES Categoria(IdCategoria),
+    FOREIGN KEY (IdDetalleVenta) REFERENCES DetalleVenta(IdDetalleVenta)
+);
+
+CREATE TABLE Alquiler (
+    IdAlquiler INT PRIMARY KEY,
+    IdCliente INT,
+    FechaAlquiler DATE,
+    FechaDevolucion DATE,
+    Monto DECIMAL(10, 2),
+    Estado VARCHAR(255),
+    Garantia DECIMAL(10, 2),
+    GeneracionDeuda VARCHAR(255),
+    DiasTranscurridos INT,
+    Descripcion VARCHAR(255),
+    FOREIGN KEY (IdCliente) REFERENCES Cliente(IdCliente)
+);
+
+CREATE TABLE Venta (
+    IdVenta INT PRIMARY KEY,
+    IdCliente INT,
+    IdDetalle INT,
+    IdDetalleVenta INT,
+    IdAlquiler INT,
+    Fecha DATE,
+    Comprobante VARCHAR(255),
+    FechaVenta DATE,
+    FormaPago VARCHAR(255),
+    MontoTotal DECIMAL(10, 2),
+    FOREIGN KEY (IdCliente) REFERENCES Cliente(IdCliente),
+    FOREIGN KEY (IdDetalleVenta) REFERENCES DetalleVenta(IdDetalleVenta),
+    FOREIGN KEY (IdAlquiler) REFERENCES Alquiler(IdAlquiler)
+);
+
+CREATE TABLE Pedido (
+    IdPedido INT PRIMARY KEY,
+    IdCliente INT,
+    Fecha DATE,
+    FOREIGN KEY (IdCliente) REFERENCES Cliente(IdCliente)
+);
+
+CREATE TABLE DetallePedido (
+    IdDetallePedido INT PRIMARY KEY,
+    IdProducto INT,
+    IdCategoria INT,
+    IdDetalleVenta INT,
+    IdPedido INT,
+    Cantidad INT,
+    Precio DECIMAL(10, 2),
+    Fecha DATE,
+    FOREIGN KEY (IdProducto) REFERENCES Producto(IdProducto),
+    FOREIGN KEY (IdCategoria) REFERENCES Categoria(IdCategoria),
+    FOREIGN KEY (IdDetalleVenta) REFERENCES DetalleVenta(IdDetalleVenta),
+    FOREIGN KEY (IdPedido) REFERENCES Pedido(IdPedido)
+);
+
+CREATE TABLE Empleado (
+    IdEmpleado INT PRIMARY KEY,
+    Nombre VARCHAR(255),
+    Apellido VARCHAR(255),
+    DNI VARCHAR(15),
+    Direccion VARCHAR(255),
+    Clave VARCHAR(255),
+    Estado VARCHAR(255),
+    Cargo VARCHAR(255),
+    FechaContrato DATE
+);
+
+CREATE TABLE Usuario (
+    IdUsuario INT PRIMARY KEY,
+    IdCliente INT,
+    IdEmpleado INT,
+    Usuario VARCHAR(255),
+    Clave VARCHAR(255),
+    Estado VARCHAR(255),
+    FOREIGN KEY (IdCliente) REFERENCES Cliente(IdCliente),
+    FOREIGN KEY (IdEmpleado) REFERENCES Empleado(IdEmpleado)
+);
